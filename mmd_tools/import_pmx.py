@@ -118,7 +118,6 @@ class PMXImporter:
 
 
     def __importBones(self):
-
         pmxModel = self.__model
 
         utils.enterEditMode(self.__armObj)
@@ -128,6 +127,7 @@ class PMXImporter:
             self.__boneTable = []
             for i in pmxModel.bones:
                 bone = self.__armObj.data.edit_bones.new(name=i.name)
+                bone.mmd_bone_name_e = i.name_e
                 loc = mathutils.Vector(i.location) * self.__scale * self.TO_BLE_MATRIX
                 bone.head = loc
                 editBoneTable.append(bone)
@@ -152,6 +152,7 @@ class PMXImporter:
                     loc = mathutils.Vector([0, 0, 1]) * self.__scale
                     b_bone.tail = b_bone.head + loc
                     if len(b_bone.children) == 0:
+                        b_bone.is_mmd_tip_bone = True
                         tipBones.append(b_bone.name)
 
             for b_bone, m_bone in zip(editBoneTable, pmxModel.bones):
@@ -163,12 +164,8 @@ class PMXImporter:
             bpy.ops.object.mode_set(mode='OBJECT')
 
         pose_bones = self.__armObj.pose.bones
-        bpy.types.PoseBone.isTipBone = bpy.props.BoolProperty(name='isTipBone', default=False)
-        bpy.types.PoseBone.name_j = bpy.props.StringProperty(name='name_j', description='the bone name in japanese.')
-        bpy.types.PoseBone.name_e = bpy.props.StringProperty(name='name_e', description='the bone name in english.')
         for p_bone in pmxModel.bones:
             b_bone = pose_bones[p_bone.name]
-            b_bone.name_e = p_bone.name_e
             if not p_bone.isRotatable:
                 b_bone.lock_rotation = [True, True, True]
             if not p_bone.isMovable:
@@ -200,7 +197,6 @@ class PMXImporter:
         if not self.__deleteTipBones:
             for i in tipBones:
                 b = pose_bones[i]
-                b.isTipBone = True
                 b.lock_rotation = [True, True, True]
                 b.lock_location = [True, True, True]
                 b.lock_scale = [True, True, True]
@@ -544,11 +540,14 @@ class PMXImporter:
         armModifier.use_vertex_groups = True
 
     def __renameLRBones(self):
+        utils.enterEditMode(self.__armObj)
         pose_bones = self.__armObj.pose.bones
         for i in pose_bones:
-            i.name_j = i.name
-            i.name = utils.convertNameToLR(i.name)
-            self.__meshObj.vertex_groups[i.name_j].name = i.name
+            bone = self.__armObj.data.edit_bones[i.name]
+            bone.mmd_bone_name_j = i.name
+            bone.name = utils.convertNameToLR(i.name)
+            self.__meshObj.vertex_groups[bone.mmd_bone_name_j].name = bone.name
+        bpy.ops.object.mode_set(mode='OBJECT')
 
     def execute(self, **args):
         self.__model = pmx.load(args['filepath'])

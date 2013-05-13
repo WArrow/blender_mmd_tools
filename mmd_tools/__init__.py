@@ -182,6 +182,11 @@ def register():
     bpy.types.Object.is_mmd_spring_joint = bpy.props.BoolProperty(name='is_mmd_spring_joint', default=False)
     bpy.types.Object.is_mmd_spring_goal = bpy.props.BoolProperty(name='is_mmd_spring_goal', default=False)
 
+    bpy.types.EditBone.is_mmd_tip_bone = bpy.props.BoolProperty(name='isTipBone', default=False)
+    bpy.types.EditBone.mmd_bone_name_j = bpy.props.StringProperty(name='name_j', description='the bone name in japanese.')
+    bpy.types.EditBone.mmd_bone_name_e = bpy.props.StringProperty(name='name_e', description='the bone name in english.')
+
+
 def unregister():
     del bpy.types.Object.is_mmd_camera
     del bpy.types.Object.mmd_camera_location
@@ -195,6 +200,10 @@ def unregister():
     del bpy.types.Object.is_mmd_non_collision_joint
     del bpy.types.Object.is_mmd_spring_joint
     del bpy.types.Object.is_mmd_spring_goal
+
+    del bpy.types.EditBone.is_mmd_tip_bone
+    del bpy.types.EditBone.mmd_bone_name_j
+    del bpy.types.EditBone.mmd_bone_name_e
 
     bpy.utils.unregister_module(__name__)
 
